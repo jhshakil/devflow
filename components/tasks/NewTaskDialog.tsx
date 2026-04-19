@@ -79,9 +79,9 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
       }
 
       toast.success("Task created");
-      setOpen(false);
-      setForm({ title: "", description: "", projectId: projectId || "", priority: "MEDIUM", dueDate: "" });
       router.refresh();
+      setTimeout(() => setOpen(false), 500); // Allow time for refresh
+      setForm({ title: "", description: "", projectId: projectId || "", priority: "MEDIUM", dueDate: "" });
     } catch (err) {
       console.error(err);
       toast.error((err as Error).message || "Failed to create task");

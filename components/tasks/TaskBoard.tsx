@@ -16,6 +16,8 @@ interface TaskBoardProps {
 const COLUMNS = [
   { id: "TODO", title: "To Do", color: "bg-slate-500" },
   { id: "IN_PROGRESS", title: "In Progress", color: "bg-blue-500" },
+  { id: "PAUSED", title: "Paused", color: "bg-amber-500" },
+  { id: "WAITING", title: "Waiting", color: "bg-orange-500" },
   { id: "IN_REVIEW", title: "In Review", color: "bg-purple-500" },
   { id: "DONE", title: "Done", color: "bg-green-500" },
 ];
