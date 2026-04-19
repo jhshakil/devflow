@@ -10,6 +10,7 @@ export const authConfig = {
   pages: {
     signIn: "/login",
   },
+  trustHost: true,
   callbacks: {
     async session({ session, token }) {
       if (token.sub && session.user) {
