@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Folder, MoreVertical } from "lucide-react";
+import { Plus, Folder } from "lucide-react";
+import ProjectsList from "@/components/projects/ProjectsList";
 
 export default async function ProjectsPage() {
   const session = await auth();
@@ -52,45 +53,7 @@ export default async function ProjectsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project: any) => (
-            <Link
-              key={project.id}
-              href={`/projects/${project.id}`}
-              className="group relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition-all dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="flex items-start justify-between">
-                <div
-                  className="h-10 w-10 rounded-lg flex items-center justify-center text-white font-bold"
-                  style={{ backgroundColor: project.color }}
-                >
-                  {project.name.charAt(0)}
-                </div>
-                <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <MoreVertical size={18} />
-                </button>
-              </div>
-              <div className="mt-4 flex-1">
-                <h3 className="text-lg font-semibold group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  {project.name}
-                </h3>
-                <p className="mt-1 text-sm text-slate-500 line-clamp-2">
-                  {project.description || "No description provided."}
-                </p>
-              </div>
-              <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    {project._count.tasks} Tasks
-                  </span>
-                </div>
-                <div className="text-xs text-slate-400">
-                  Updated {new Date(project.updatedAt).toLocaleDateString()}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ProjectsList projects={projects} />
       )}
     </div>
   );

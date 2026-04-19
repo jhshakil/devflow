@@ -13,13 +13,14 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import type { Project } from "@/lib/types";
+import type { Project, Task } from "@/lib/types";
 
 interface NewTaskDialogProps {
   projectId?: string;
+  onTaskCreated?: (task: Task) => void;
 }
 
-export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
+export default function NewTaskDialog({ projectId, onTaskCreated }: NewTaskDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,10 +49,6 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
     load();
   }, [projectId]);
 
-  useEffect(() => {
-    if (projectId) setForm((s) => ({ ...s, projectId }));
-  }, [projectId]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.projectId) {
@@ -78,7 +75,9 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
         throw new Error(err?.error || "Failed to create task");
       }
 
+      const task = await res.json();
       toast.success("Task created");
+      onTaskCreated?.(task);
       router.refresh();
       setTimeout(() => setOpen(false), 500); // Allow time for refresh
       setForm({ title: "", description: "", projectId: projectId || "", priority: "MEDIUM", dueDate: "" });
@@ -110,7 +109,7 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
             <input
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full mt-1 rounded-md border px-3 py-2"
+              className="w-full mt-1 rounded-md border px-3 py-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100"
               required
             />
           </div>
@@ -120,7 +119,7 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full mt-1 rounded-md border px-3 py-2"
+              className="w-full mt-1 rounded-md border px-3 py-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100"
               rows={3}
             />
           </div>
@@ -131,7 +130,7 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
               <select
                 value={form.projectId}
                 onChange={(e) => setForm({ ...form, projectId: e.target.value })}
-                className="w-full mt-1 rounded-md border px-3 py-2"
+                className="w-full mt-1 rounded-md border px-3 py-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100"
                 required
               >
                 <option value="">Select project</option>
@@ -148,7 +147,7 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="w-full mt-1 rounded-md border px-3 py-2"
+                className="w-full mt-1 rounded-md border px-3 py-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -163,7 +162,7 @@ export default function NewTaskDialog({ projectId }: NewTaskDialogProps) {
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-full mt-1 rounded-md border px-3 py-2"
+                className="w-full mt-1 rounded-md border px-3 py-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>

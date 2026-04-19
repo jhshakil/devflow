@@ -3,7 +3,7 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import TaskCard from "./TaskCard";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { Project, Task } from "@/lib/types";
@@ -11,6 +11,7 @@ import type { Project, Task } from "@/lib/types";
 interface TaskBoardProps {
   project: Project;
   initialTasks: Task[];
+  tasks?: Task[];
 }
 
 const COLUMNS = [
@@ -22,9 +23,15 @@ const COLUMNS = [
   { id: "DONE", title: "Done", color: "bg-green-500" },
 ];
 
-export default function TaskBoard({ project, initialTasks }: TaskBoardProps) {
+export default function TaskBoard({ project, initialTasks, tasks: propTasks }: TaskBoardProps) {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+
+  useEffect(() => {
+    if (propTasks) {
+      setTasks(propTasks);
+    }
+  }, [propTasks]);
 
   const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;

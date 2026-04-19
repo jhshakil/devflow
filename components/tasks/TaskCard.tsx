@@ -1,28 +1,28 @@
-import Link from "next/link";
-import { MoreHorizontal, Calendar, Clock } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { MoreHorizontal, Calendar, Clock, Trash2, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-
-interface TaskItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  progress: number;
-  dueDate?: string | Date | null;
-  totalTime: number;
-  userId: string;
-  image?: string | null;
-}
+import EditTaskDialog from "./EditTaskDialog";
+import type { Task } from "@/lib/types";
 
 interface TaskCardProps {
-  task: TaskItem;
+  task: Task;
   projectId: string;
 }
 
 export default function TaskCard({ task, projectId }: TaskCardProps) {
+  const router = useRouter();
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
   const priorityMap: Record<string, "error" | "warning" | "info" | "default"> =
     {
       CRITICAL: "error",
@@ -31,10 +31,33 @@ export default function TaskCard({ task, projectId }: TaskCardProps) {
       LOW: "info",
     };
 
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete task");
+      }
+      toast.success("Task deleted");
+      router.push(`/projects/${projectId}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not delete task");
+    }
+  };
+
   return (
-    <Link
-      href={`/projects/${projectId}/tasks/${task.id}`}
-      className="group block p-4 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition-all cursor-pointer relative overflow-hidden"
+    <div
+      className={cn(
+        "group relative p-4 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm hover:border-indigo-500/50 hover:shadow-md transition-all",
+        !showEditDialog && !showDeleteConfirm && "cursor-pointer"
+      )}
+      onClick={() => {
+        if (!showEditDialog && !showDeleteConfirm) {
+          router.push(`/projects/${projectId}/tasks/${task.id}`);
+        }
+      }}
     >
       {/* Priority Indicator Line */}
       <div
@@ -50,13 +73,61 @@ export default function TaskCard({ task, projectId }: TaskCardProps) {
         )}
       ></div>
 
+      <div className="absolute right-3 top-3 text-right">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setActionsOpen((prev) => !prev);
+          }}
+          className="text-slate-400 bg-white/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 p-1 rounded-md transition"
+          aria-label="Task actions"
+        >
+          <MoreHorizontal size={16} />
+        </button>
+
+        {actionsOpen && (
+          <div
+            className="mt-2 w-40 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 shadow-lg text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActionsOpen(false);
+                setShowEditDialog(true);
+              }}
+              className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <div className="flex items-center gap-2">
+                <Pencil size={14} />
+                Edit Task
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActionsOpen(false);
+                setShowDeleteConfirm(true);
+              }}
+              className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <div className="flex items-center gap-2">
+                <Trash2 size={14} />
+                Delete Task
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="flex justify-between items-start mb-3">
         <Badge variant={priorityMap[task.priority] || "default"}>
           {task.priority}
         </Badge>
-        <button className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md">
-          <MoreHorizontal size={14} />
-        </button>
       </div>
 
       <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -64,7 +135,7 @@ export default function TaskCard({ task, projectId }: TaskCardProps) {
       </h4>
 
       {task.description && (
-        <p className="mt-1 text-xs text-slate-500 line-clamp-2 italic">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 italic">
           {task.description}
         </p>
       )}
@@ -110,6 +181,25 @@ export default function TaskCard({ task, projectId }: TaskCardProps) {
       {task.progress > 0 && (
         <ProgressBar progress={task.progress} size="sm" className="mt-4" />
       )}
-    </Link>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete task"
+        description="Are you sure you want to delete this task? This cannot be undone."
+        onConfirm={handleDelete}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDestructive
+      />
+
+      <EditTaskDialog
+        task={task}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onTaskUpdated={() => router.refresh()}
+      />
+    </div>
   );
 }
+

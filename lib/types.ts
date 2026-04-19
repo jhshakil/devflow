@@ -45,6 +45,7 @@ export interface Task {
   completedAt: Date | null;
   totalTime: number;
   blockedBy: string[];
+  image: string | null;
   createdAt: Date;
   updatedAt: Date;
   project?: Project;
