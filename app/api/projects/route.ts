@@ -10,9 +10,15 @@ export async function GET() {
 
   try {
     const projects = await prisma.project.findMany({
-      where: { userId: session.user.id },
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { team: { members: { some: { userId: session.user.id } } } },
+        ],
+      },
       orderBy: { updatedAt: "desc" },
       include: {
+        team: { select: { id: true, name: true } },
         _count: {
           select: { tasks: true },
         },
@@ -36,7 +42,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { name, description, color } = await req.json();
+    const { name, description, color, teamId } = await req.json();
 
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -48,7 +54,9 @@ export async function POST(req: Request) {
         description,
         color: color || "#7F77DD",
         userId: session.user.id,
+        ...(teamId ? { teamId } : {}),
       },
+      include: { team: { select: { id: true, name: true } } },
     });
 
     return NextResponse.json(project);

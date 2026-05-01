@@ -8,8 +8,14 @@ export default async function ProjectsPage() {
   const session = await auth();
 
   // In a real app, I'd fetch from API or Prisma directly in server component
+  const userId = session?.user?.id;
   const projects = await prisma.project.findMany({
-    where: { userId: session?.user?.id },
+    where: {
+      OR: [
+        { userId: userId },
+        { team: { members: { some: { userId: userId } } } },
+      ],
+    },
     include: {
       _count: {
         select: { tasks: true },

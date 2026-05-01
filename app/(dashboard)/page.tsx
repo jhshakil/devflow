@@ -59,7 +59,7 @@ export default async function DashboardPage() {
           Welcome back, {session?.user?.name?.split(" ")[0] || "Developer"}
         </h1>
         <p className="text-slate-500 dark:text-slate-400">
-          Here's what's happening in your workspace today.
+          {`Here's what's happening in your workspace today.`}
         </p>
       </div>
 
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
         {/* Today's Tasks */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Today's Tasks</h2>
+            <h2 className="text-lg font-semibold">{`Today's Tasks`}</h2>
             <Link
               href="/tasks"
               className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"

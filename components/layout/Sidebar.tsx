@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Plus,
   Settings,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Tasks", href: "/tasks", icon: CheckSquare },
   { name: "Deadlines", href: "/deadlines", icon: Clock },
   { name: "Notes", href: "/notes", icon: FileText },
+  { name: "Teams", href: "/teams", icon: Users },
   { name: "Settings", href: "/profile", icon: Settings },
 ];
 

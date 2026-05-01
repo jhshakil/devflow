@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FolderPlus, Loader2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -9,10 +9,21 @@ import { toast } from "sonner";
 export default function NewProjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     color: "#7F77DD",
+    teamId: "",
+  });
+
+  import("react").then((m) => {
+    m.useEffect(() => {
+      fetch("/api/teams")
+        .then((r) => r.json())
+        .then(setTeams)
+        .catch(console.error);
+    }, []);
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +117,26 @@ export default function NewProjectPage() {
               placeholder="What is this project about?"
               className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none placeholder:text-slate-400"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Assign to Team (Optional)
+            </label>
+            <select
+              value={formData.teamId}
+              onChange={(e) =>
+                setFormData({ ...formData, teamId: e.target.value })
+              }
+              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
+            >
+              <option value="">Personal Workspace</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-3">

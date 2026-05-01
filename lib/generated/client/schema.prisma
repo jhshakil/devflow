@@ -23,6 +23,8 @@ model User {
   tasks         Task[]
   notes         Note[]
   notifications Notification[]
+  ownedTeams    Team[]         @relation("TeamOwner")
+  teamMembers   TeamMember[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -37,6 +39,8 @@ model Project {
   tasks       Task[]
   deadlines   Deadline[]
   notes       Note[]
+  teamId      String?
+  team        Team?      @relation(fields: [teamId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -179,4 +183,35 @@ model Notification {
   message   String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  ownerId     String
+  owner       User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     TeamMember[]
+  projects    Project[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      TeamRole @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, userId])
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
